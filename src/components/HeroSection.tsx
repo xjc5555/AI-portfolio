@@ -1,8 +1,9 @@
 import { motion } from "motion/react";
 import { Sparkles, Download, Terminal } from "lucide-react";
 import { Button } from "./ui/button";
-import resumePdf from "../../徐佳聪-AI产品-简历.pdf";
 import avatar from "../assets/2cc9481437acf79938488c2d17763399.jpg";
+
+const resumePdf = "/xjc-resume.pdf";
 
 export function HeroSection() {
   const typewriterText = "AI 产品经理 | 0→1 构建者";
