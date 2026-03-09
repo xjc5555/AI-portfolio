@@ -3,7 +3,7 @@ import { Building2, Briefcase, Code2, ArrowRight } from "lucide-react";
 import { Button } from "./ui/button";
 import demoVideo from "../../9b882fca7ee3b1a2518ff9741e96977b.mp4";
 
-const cyberTaokeDemoUrl = "/AI-Decision3/index.html";
+const cyberTaokeDemoUrl = "AI-Decision3/index.html";
 
 const experiences = [
   {
