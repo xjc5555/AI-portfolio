@@ -1,0 +1,36 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]   # 你的默认分支，如果叫 master 就改成 master
+  workflow_dispatch:      # 允许你手动点按钮触发
+
+permissions:
+  contents: write         # 允许 workflow 往 gh-pages 分支推代码
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build site
+        run: npm run build   # 会产出 build/ 目录
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build         # 这里用 build
+          publish_branch: gh-pages     # 输出到 gh-pages 分支
