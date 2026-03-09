@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 赛博淘客 - 二手交易智能决策助手</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <canvas id="particleCanvas"></canvas>
+
+    <button class="theme-toggle" id="themeToggle" onclick="ThemeManager.toggle()">🌙</button>
+    <button class="history-toggle" onclick="document.getElementById('historyPanel').classList.toggle('open')">📜</button>
+    
+    <div class="history-panel" id="historyPanel">
+        <h3 style="color:var(--primary-blue);margin-bottom:20px">📜 分析历史</h3>
+        <div id="historyList"></div>
+        <button class="history-clear-btn" onclick="HistoryManager.clear()">🗑️ 清空历史</button>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader-container">
+            <div class="cyber-loader">
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="ring"></div>
+            </div>
+            <div class="loading-text" id="loadingText">🔄 正在分析...</div>
+            <div class="loading-steps">
+                <div class="loading-step" id="step1"><div class="step-icon">1</div><span>搜索数据</span></div>
+                <div class="loading-step" id="step2"><div class="step-icon">2</div><span>AI分析</span></div>
+                <div class="loading-step" id="step3"><div class="step-icon">3</div><span>生成报告</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">
+        <span id="toastIcon">✅</span>
+        <span id="toastMessage">成功</span>
+    </div>
+
+    <div class="container">
+        <header class="header">
+            <div class="logo">🤖</div>
+            <h1 class="title">赛博淘客</h1>
+            <p class="subtitle">AI驱动的二手交易智能决策助手</p>
+        </header>
+
+        <section class="glass-card">
+            <h2 class="card-title">🎯 输入您想买的二手商品</h2>
+            
+            <div class="preset-products" id="presetProducts">
+                <div class="product-chip" data-product="iPhone 15" onclick="selectProduct(this)">📱 iPhone 15</div>
+                <div class="product-chip" data-product="MacBook Pro" onclick="selectProduct(this)">💻 MacBook Pro</div>
+                <div class="product-chip" data-product="AirPods Pro" onclick="selectProduct(this)">🎧 AirPods Pro</div>
+                <div class="product-chip" data-product="PlayStation 5" onclick="selectProduct(this)">🎮 PS5</div>
+                <div class="product-chip" data-product="Switch" onclick="selectProduct(this)">🎮 Switch</div>
+                <div class="product-chip" data-product="戴森吸尘器" onclick="selectProduct(this)">🧹 戴森</div>
+            </div>
+
+            <div class="input-group search-container">
+                <label class="input-label">✏️ 或输入商品名称</label>
+                <div class="search-box">
+                    <input type="text" class="cyber-input" id="productInput" placeholder="例如：iPhone 15、戴森V15、MacBook..." autocomplete="off">
+                    <div class="search-loading" id="searchLoading"><div class="search-spinner"></div></div>
+                </div>
+                <div class="search-suggestions" id="searchSuggestions">
+                    <div class="suggestion-list" id="suggestionList"></div>
+                </div>
+            </div>
+
+            <div class="action-area">
+                <button class="analyze-btn" id="analyzeBtn" onclick="startAnalysis()">🚀 开始分析</button>
+                <button class="chat-btn" onclick="startChat()">💬 智能对话</button>
+                <button class="reset-btn" onclick="clearAll()">🔄 重置</button>
+            </div>
+        </section>
+
+
+
+        <!-- 热门搜索推荐 -->
+        <section class="glass-card">
+            <h2 class="card-title">🔥 热门搜索</h2>
+            <p class="card-subtitle">点击快速搜索热门二手商品</p>
+            
+            <div class="preset-products" id="hotSearches">
+                <div class="product-chip" data-product="AirPods Pro 2" onclick="selectHotSearch(this)">🎧 AirPods Pro 2</div>
+                <div class="product-chip" data-product="MacBook Pro M3" onclick="selectHotSearch(this)">💻 MacBook Pro M3</div>
+                <div class="product-chip" data-product="iPad Pro 2024" onclick="selectHotSearch(this)">📱 iPad Pro 2024</div>
+                <div class="product-chip" data-product="PS5 光驱版" onclick="selectHotSearch(this)">🎮 PS5 光驱版</div>
+                <div class="product-chip" data-product="Switch OLED" onclick="selectHotSearch(this)">🎮 Switch OLED</div>
+                <div class="product-chip" data-product="戴森 V15" onclick="selectHotSearch(this)">🧹 戴森 V15</div>
+                <div class="product-chip" data-product="Apple Watch Ultra 2" onclick="selectHotSearch(this)">⌚ Apple Watch Ultra 2</div>
+                <div class="product-chip" data-product="GoPro Hero 12" onclick="selectHotSearch(this)">📷 GoPro Hero 12</div>
+            </div>
+        </section>
+
+        <section class="report-section" id="reportSection">
+            <!-- 模块导航 -->
+            <div class="module-tabs" id="moduleTabs">
+                <button class="tab-btn active" data-tab="summary" onclick="switchTab('summary')">📊 市场概览</button>
+                <button class="tab-btn" data-tab="price" onclick="switchTab('price')">💰 价格分析</button>
+                <button class="tab-btn" data-tab="platforms" onclick="switchTab('platforms')">🏪 平台对比</button>
+                <button class="tab-btn" data-tab="trend" onclick="switchTab('trend')">📈 价格趋势</button>
+                <button class="tab-btn" data-tab="recommend" onclick="switchTab('recommend')">💡 购买建议</button>
+                <button class="tab-btn" data-tab="links" onclick="switchTab('links')">🔗 商品链接</button>
+            </div>
+
+            <!-- 报告内容区域 -->
+            <div class="report-content">
+                <!-- 市场概览 -->
+                <div class="tab-content active" id="summary">
+                    <div class="summary-card">
+                        <div class="summary-item">
+                            <span class="summary-label">商品名称</span>
+                            <span class="summary-value" id="productName">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">市场均价</span>
+                            <span class="summary-value price" id="avgPrice">¥0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">价格范围</span>
+                            <span class="summary-value" id="priceRange">¥0 - ¥0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">商品数量</span>
+                            <span class="summary-value" id="productCount">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">分析时间</span>
+                            <span class="summary-value" id="analysisTime">-</span>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>📊 价格分布</h3>
+                        <canvas id="priceDistributionChart" width="800" height="300"></canvas>
+                    </div>
+                </div>
+
+                <!-- 价格分析 -->
+                <div class="tab-content" id="price">
+                    <div class="price-analysis">
+                        <h3>💰 详细价格分析</h3>
+                        <div class="price-breakdown">
+                            <div class="price-item">
+                                <span>最低价格</span>
+                                <span id="minPrice">¥0</span>
+                            </div>
+                            <div class="price-item">
+                                <span>最高价格</span>
+                                <span id="maxPrice">¥0</span>
+                            </div>
+                            <div class="price-item">
+                                <span>平均价格</span>
+                                <span id="meanPrice">¥0</span>
+                            </div>
+                            <div class="price-item">
+                                <span>中位数价格</span>
+                                <span id="medianPrice">¥0</span>
+                            </div>
+                            <div class="price-item">
+                                <span>标准差</span>
+                                <span id="priceStd">¥0</span>
+                            </div>
+                        </div>
+
+                        <div class="chart-container">
+                            <h4>价格区间分布</h4>
+                            <canvas id="priceRangeChart" width="800" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 平台对比 -->
+                <div class="tab-content" id="platforms">
+                    <h3>🏪 平台对比分析</h3>
+                    <div class="platforms-grid">
+                        <div class="platform-card">
+                            <h4>闲鱼</h4>
+                            <div class="platform-stats">
+                                <div>平均价格: <span id="xianyuAvg">¥0</span></div>
+                                <div>商品数量: <span id="xianyuCount">0</span></div>
+                                <div>占比: <span id="xianyuPercent">0%</span></div>
+                            </div>
+                            <button class="platform-link-btn" onclick="openPlatformLink('xianyu')">查看商品</button>
+                        </div>
+
+                        <div class="platform-card">
+                            <h4>转转</h4>
+                            <div class="platform-stats">
+                                <div>平均价格: <span id="zhuanzhuanAvg">¥0</span></div>
+                                <div>商品数量: <span id="zhuanzhuanCount">0</span></div>
+                                <div>占比: <span id="zhuanzhuanPercent">0%</span></div>
+                            </div>
+                            <button class="platform-link-btn" onclick="openPlatformLink('zhuanzhuan')">查看商品</button>
+                        </div>
+
+                        <div class="platform-card">
+                            <h4>爱回收</h4>
+                            <div class="platform-stats">
+                                <div>平均价格: <span id="aihuishouAvg">¥0</span></div>
+                                <div>商品数量: <span id="aihuishouCount">0</span></div>
+                                <div>占比: <span id="aihuishouPercent">0%</span></div>
+                            </div>
+                            <button class="platform-link-btn" onclick="openPlatformLink('aihuishou')">查看商品</button>
+                        </div>
+
+                        <div class="platform-card">
+                            <h4>拍拍</h4>
+                            <div class="platform-stats">
+                                <div>平均价格: <span id="paipaiAvg">¥0</span></div>
+                                <div>商品数量: <span id="paipaiCount">0</span></div>
+                                <div>占比: <span id="paipaiPercent">0%</span></div>
+                            </div>
+                            <button class="platform-link-btn" onclick="openPlatformLink('paipai')">查看商品</button>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h4>平台分布</h4>
+                        <canvas id="platformDistributionChart" width="800" height="300"></canvas>
+                    </div>
+                </div>
+
+                <!-- 价格趋势 -->
+                <div class="tab-content" id="trend">
+                    <h3>📈 价格趋势分析</h3>
+                    <p class="trend-note">基于最近30天的价格数据</p>
+                    
+                    <div class="chart-container">
+                        <canvas id="priceTrendChart" width="800" height="300"></canvas>
+                    </div>
+
+                    <div class="trend-analysis">
+                        <h4>趋势分析</h4>
+                        <div id="trendAnalysis">
+                            <p>暂无趋势数据</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 购买建议 -->
+                <div class="tab-content" id="recommend">
+                    <h3>💡 智能购买建议</h3>
+                    
+                    <div class="recommendation-card">
+                        <h4>🎯 最优购买时机</h4>
+                        <div id="bestTime"><p>暂无数据</p></div>
+                    </div>
+
+                    <div class="recommendation-card">
+                        <h4>🏆 推荐平台</h4>
+                        <div id="recommendedPlatform"><p>暂无数据</p></div>
+                    </div>
+
+                    <div class="recommendation-card">
+                        <h4>⚠️ 注意事项</h4>
+                        <div id="purchaseTips"><p>暂无数据</p></div>
+                    </div>
+
+                    <div class="recommendation-card">
+                        <h4>💬 AI分析</h4>
+                        <div id="aiAnalysis"><p>暂无数据</p></div>
+                    </div>
+                </div>
+
+                <!-- 商品链接 -->
+                <div class="tab-content" id="links">
+                    <h3>🔗 优质商品链接</h3>
+                    <p class="links-note">点击链接跳转到对应平台</p>
+                    
+                    <div class="links-container" id="linksContainer">
+                        <!-- 链接将通过JavaScript动态添加 -->
+                        <div class="no-links">
+                            <p>暂无商品链接</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 对话窗口 -->
+    <div class="chat-modal" id="chatModal">
+        <div class="chat-header">
+            <h3>💬 智能对话</h3>
+            <button class="close-btn" onclick="closeChat()">×</button>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="chat-message bot-message">
+                <div class="message-content">
+                    <p>你好！我是赛博淘客的智能助手，有什么可以帮你的吗？</p>
+                </div>
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="输入你的问题...">
+            <button class="send-btn" onclick="sendMessage()">发送</button>
+        </div>
+    </div>
+
+    <!-- 图片识别模态框 -->
+    <div class="image-modal" id="imageModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📷 图片识别</h3>
+                <button class="close-btn" onclick="closeImageModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="image-upload-area">
+                    <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(this)">
+                    <label for="imageUpload" class="upload-label">
+                        <div class="upload-icon">📸</div>
+                        <div class="upload-text">点击或拖拽上传图片</div>
+                        <div class="upload-hint">支持 JPG、PNG 格式</div>
+                    </label>
+                    <div id="imagePreview"></div>
+                </div>
+                <button class="recognize-btn" onclick="recognizeImage()">🔍 识别图片</button>
+                <div class="recognition-result" id="recognitionResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+    <script src="mockData.js"></script>
+</body>
+</html>
+
